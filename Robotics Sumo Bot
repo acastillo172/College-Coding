@@ -1,0 +1,103 @@
+#!/usr/bin/env pybricks-micropython
+from math import *
+
+from pybricks import ev3brick as brick
+from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
+                                 InfraredSensor, UltrasonicSensor, GyroSensor)
+from pybricks.parameters import (Port, Stop, Direction, Button, Color,
+                                 SoundFile, ImageFile, Align)
+from pybricks.tools import print, wait, StopWatch
+from pybricks.robotics import DriveBase
+
+# Write your program here
+brick.sound.beep()
+
+r_motor = Motor(Port.A, Direction.CLOCKWISE, [24,40])
+l_motor = Motor(Port.B, Direction.CLOCKWISE, [24,40])
+ultsnc_motor = Motor(Port.C)
+
+r_touch = TouchSensor(Port.S1)
+l_touch = TouchSensor(Port.S2)
+
+ultsnc = UltrasonicSensor(Port.S4)
+
+nachoBot = DriveBase(l_motor, r_motor, 56, 199)
+
+light = ColorSensor(Port.S3)
+
+
+
+set_center = 0
+ultsnc_motor.reset_angle(set_center)
+
+def checkLight_move() :
+    if light.reflection() < 25  :
+        nachoBot.drive_time(-250, 0, 1500)
+        nachoBot.drive_time(250, 180, 1500)
+    else :
+        return
+    
+def checkPress_move() :
+    if l_touch.pressed() :
+        checkLight_move()
+        nachoBot.drive_time(250,- 45, 1500)
+        while l_touch.pressed() :
+            checkLight_move()
+            nachoBot.drive(300,0)
+        return
+
+    elif r_touch.pressed() :
+        checkLight_move()
+        nachoBot.drive_time(250, 45, 1500)
+        while l_touch.pressed() :
+            checkLight_move()
+            nachoBot.drive(300,0)
+        return
+    else :
+        return
+
+lcounter = 6
+rcounter = 0
+# Main Loop
+while True :
+    brick.light(Color.RED)
+    
+    checkLight_move()
+    checkPress_move()
+    nachoBot.drive(125,0)
+    if lcounter % 12 != 0 and rcounter % 12 == 0 :        
+        ultsnc_motor.run_angle(200, 10)
+        lcounter += 1
+        dist = ultsnc.distance()
+        ang = ultsnc_motor.angle()
+        print(ang)
+        if dist < 200 :
+            checkLight_move()
+            checkPress_move()
+            turn_time = 1000
+            rot_speed = ang / (turn_time / 1000)
+            print(rot_speed)
+            for i in range(0,3) :
+                checkLight_move()
+                nachoBot.drive_time(150,- rot_speed, turn_time / 4)
+        if lcounter % 12 == 0 :
+            rcounter += 1
+
+    elif rcounter % 12 != 0 and lcounter % 12 == 0:
+        ultsnc_motor.run_angle(-200, 10)
+        rcounter += 1
+        dist = ultsnc.distance()
+        ang = ultsnc_motor.angle()
+        print(ang)
+        if dist < 200 :
+            checkLight_move()
+            checkPress_move()
+            turn_time = 1000
+            rot_speed = ang / (turn_time / 1000)
+            print(rot_speed)
+            for i in range(0,3) :
+                checkLight_move()
+                nachoBot.drive_time(150,- rot_speed, turn_time / 4)
+
+        if rcounter % 12 == 0 :
+            lcounter += 1
