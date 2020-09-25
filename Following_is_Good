@@ -1,0 +1,55 @@
+#!/usr/bin/env pybricks-micropython
+
+from pybricks import ev3brick as brick
+from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
+                                 InfraredSensor, UltrasonicSensor, GyroSensor)
+from pybricks.parameters import (Port, Stop, Direction, Button, Color,
+                                 SoundFile, ImageFile, Align)
+from pybricks.tools import print, wait, StopWatch
+from pybricks.robotics import DriveBase
+
+from pybricks.ev3devio import Ev3devSensor 
+import utime
+import ev3dev2
+from ev3dev2.port import LegoPort
+
+class MySensor(Ev3devSensor):  #Define Class 
+    _ev3dev_driver_name="ev3-analog-01"
+    #do not forget to set port mode to EV3-Analog 
+    def readvalue(self):
+        self._mode('ANALOG')
+        return self._value(0)
+
+
+# Before running the code go to Device Browser and Sensors. Make sure you can see ev3-analog-01, otherwise you will get an error.
+
+# Write your program here
+def main():
+    brick.sound.beep()
+    sens = LegoPort(address ='ev3-ports:in1') # which port?? 1,2,3, or 4
+    sens.mode = 'ev3-analog'
+    utime.sleep(1.5)
+    sensor_left = MySensor(Port.S1) # same port as above
+    sensor_right = MySensor(Port.S4)
+    #reading_left = sensor_left.readvalue()
+    #reading_right = sensor_right.readvalue()
+
+
+    right_motor = Motor(Port.A, Direction.COUNTERCLOCKWISE)
+    left_motor = Motor(Port.B, Direction.COUNTERCLOCKWISE)
+    ziggy = DriveBase(left_motor, right_motor, 56, 114)
+    turn_speed = 130
+    speed = 200
+
+    while True:
+        reading_left = sensor_left.readvalue()
+        reading_right = sensor_right.readvalue()
+        print(reading_left)
+        print(reading_right)
+
+        #if (reading_left > reading_right) 
+            #turning right
+            #ziggy.drive(speed,turn_speed)
+        #elif (reading_left < reading_right)
+            #turning left
+            #ziggy.drive(speed,-turn_speed)
